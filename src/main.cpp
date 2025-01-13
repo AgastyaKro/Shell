@@ -23,12 +23,11 @@ int main() {
         // Handle `type` builtin
         if (input.substr(0, 4) == "type" && input.size() > 5) {
             std::string command = input.substr(5);
-            if (builtins.count(command)) {
+            if (builtins.count(command)) { // will be 1 -> true if exists in builtins
                 std::cout << command << " is a shell builtin" << std::endl;
             } else {
                 std::cout << command << ": not found" << std::endl;
             }
-            continue;
         }
 
         // Handle `echo` command
