@@ -28,6 +28,7 @@ int main() {
             } else {
                 std::cout << command << ": not found" << std::endl;
             }
+            continue;
         }
 
         // Handle `echo` command
