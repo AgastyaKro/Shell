@@ -1,11 +1,15 @@
 #include <iostream>
+#include <string>
+#include <unordered_set>
 
 int main() {
-  // Flush after every std::cout / std:cerr
-  std::cout << std::unitbuf;
-  std::cerr << std::unitbuf;
+    // Flush after every std::cout / std::cerr
+    std::cout << std::unitbuf;
+    std::cerr << std::unitbuf;
 
-    // Main 
+    // Define a set of shell builtin commands
+    std::unordered_set<std::string> builtins = {"echo", "exit", "type"};
+
     while (true) {
         std::cout << "$ ";
 
@@ -16,21 +20,25 @@ int main() {
             return 0; // Exits the program
         }
 
+        // Handle `type` builtin
+        if (input.substr(0, 4) == "type" && input.size() > 5) {
+            std::string command = input.substr(5);
+            if (builtins.count(command)) {
+                std::cout << command << " is a shell builtin" << std::endl;
+            } else {
+                std::cout << command << ": not found" << std::endl;
+            }
+            continue;
+        }
+
+        // Handle `echo` command
         if (input.substr(0, 4) == "echo" && input.size() > 5) {
             std::cout << input.substr(5) << std::endl;
-        } 
-        if (input.substr(0, 4) == "type" && input.substr(5) == "echo") {
-            std::cout << "echo is a shell builtin" << std::endl;
+            continue;
         }
-        if (input.substr(0, 4) == "type" && input.substr(5) == "exit") {
-            std::cout << "exit is a shell builtin" << std::endl;
-        }
-        if (input.substr(0, 4) == "type" && input.substr(5) == "type") {
-            std::cout << "type is a shell builtin" << std::endl;
-        }
-        else {
-            std::cout << input << ": command not found" << std::endl;
-        }
+
+        // Command not recognized
+        std::cout << input << ": command not found" << std::endl;
     }
 
     return 0;
