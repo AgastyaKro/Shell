@@ -1,11 +1,12 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
-#include <cstdlib> // added
-#include <sstream> // added
-#include <vector> // added
-#include <filesystem> // added
-#include <unistd.h> // for access(), added
+#include <cstdlib> 
+#include <sstream> 
+#include <vector> 
+#include <filesystem> 
+#include <unistd.h> 
+#include <sys/wait.h>
 
 std::vector<std::string> split (const std::string &str, char delimeter){
     std::vector<std::string> tokens;
@@ -54,6 +55,16 @@ int main() {
             return 0; // Exits the program
         }
 
+        std::vector<std::string> tokens = split(input, ' ');
+        if (tokens.empty()) continue;
+
+        std::string command = tokens[0];
+        std::vector<const char *> args;
+        for (const auto &token : tokens){
+            args.push_back(token.c_str());
+        }
+        args.push_back(nullptr);
+
         // Handle `type` builtin
         if (input.substr(0, 4) == "type" && input.size() > 5) {
             std::string command = input.substr(5);
@@ -62,10 +73,10 @@ int main() {
             } else {
                 std::string path = search_path(command); // renamed function call
                 if (!path.empty()) { // added
-                    std::cout << command << " is " << path << std::endl; // added
-                } else { // added
-                    std::cout << command << ": not found" << std::endl; // added
-                } // added
+                    std::cout << command << " is " << path << std::endl; 
+                } else { 
+                    std::cout << command << ": not found" << std::endl; 
+                } 
             }
 
             continue;
@@ -76,6 +87,24 @@ int main() {
             std::cout << input.substr(5) << std::endl;
             continue;
         }
+
+        // Handle external commands
+        std::string full_path = search_path(command); 
+        if (!full_path.empty()) { 
+            pid_t pid = fork(); 
+            if (pid == 0) { 
+                execvp(full_path.c_str(), const_cast<char *const *>(args.data())); 
+                perror("execvp"); 
+                exit(1); 
+            } else if (pid > 0) { 
+                int status; 
+                waitpid(pid, &status, 0); 
+            } else { 
+                perror("fork"); 
+            } 
+            continue; 
+        } 
+
 
         // Command not recognized
         std::cout << input << ": command not found" << std::endl;
