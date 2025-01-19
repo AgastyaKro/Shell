@@ -43,7 +43,7 @@ int main() {
     std::cerr << std::unitbuf;
 
     // Define a set of shell builtin commands
-    std::unordered_set<std::string> builtins = {"echo", "exit", "type"};
+    std::unordered_set<std::string> builtins = {"echo", "exit", "type", "pwd"};
 
     while (true) {
         std::cout << "$ ";
@@ -65,6 +65,12 @@ int main() {
         }
         args.push_back(nullptr);
 
+        if (command == "pwd"){
+            std::string cwd = std::filesystem::current_path();
+            std::cout << cwd << "\n";
+            continue;
+        }
+
         // Handle `type` builtin
         if (input.substr(0, 4) == "type" && input.size() > 5) {
             std::string command = input.substr(5);
@@ -72,7 +78,7 @@ int main() {
                 std::cout << command << " is a shell builtin" << std::endl;
             } else {
                 std::string path = search_path(command); // renamed function call
-                if (!path.empty()) { // added
+                if (!path.empty()) { 
                     std::cout << command << " is " << path << std::endl; 
                 } else { 
                     std::cout << command << ": not found" << std::endl; 
