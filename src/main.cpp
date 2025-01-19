@@ -76,7 +76,7 @@ int main() {
                 std::cerr << "cd: missing argument\n";
             else {
                 const std::string &path = tokens[1];
-                if (chdir(path.c_str() == -1)){
+                if (chdir(path.c_str()) == -1){
                     std::cerr << "cd: " << tokens[1] << ": No such file or directory\n"; //added
                 }
             }
