@@ -88,19 +88,20 @@ int main() {
             continue;
         }
 
-        // Handle external commands
+        // Handle external commands and creates child processes w/out termenating the parent proccess
         std::string full_path = search_path(command); 
         if (!full_path.empty()) { 
-            pid_t pid = fork(); 
-            if (pid == 0) { 
-                execvp(full_path.c_str(), const_cast<char *const *>(args.data())); 
-                perror("execvp"); 
+            pid_t pid = fork(); // Creates a new child process
+            if (pid == 0) { // child
+                execvp(full_path.c_str(), const_cast<char *const *>(args.data()));  // Replaces the current process image 
+                // (the child process) with the external program located at full_path.
+                perror("execvp"); // if fails
                 exit(1); 
-            } else if (pid > 0) { 
+            } else if (pid > 0) { // parent
                 int status; 
-                waitpid(pid, &status, 0); 
+                waitpid(pid, &status, 0); // Makes the parent process wait until the child process (external program) finishes.
             } else { 
-                perror("fork"); 
+                perror("fork"); // fails handler
             } 
             continue; 
         } 
