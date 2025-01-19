@@ -43,7 +43,7 @@ int main() {
     std::cerr << std::unitbuf;
 
     // Define a set of shell builtin commands
-    std::unordered_set<std::string> builtins = {"echo", "exit", "type", "pwd"};
+    std::unordered_set<std::string> builtins = {"echo", "exit", "type", "pwd", "cd"};
 
     while (true) {
         std::cout << "$ ";
@@ -68,6 +68,18 @@ int main() {
         if (command == "pwd"){
             std::string cwd = std::filesystem::current_path();
             std::cout << cwd << "\n";
+            continue;
+        }
+
+        if (command == "cd"){
+            if (tokens.size() < 2)
+                std::cerr << "cd: missing argument\n";
+            else {
+                const std::string &path = tokens[1];
+                if (chdir(path.c_str() == -1)){
+                    std::cerr << "cd: " << tokens[1] << ": No such file or directory\n"; //added
+                }
+            }
             continue;
         }
 
