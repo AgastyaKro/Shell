@@ -75,7 +75,22 @@ int main() {
             if (tokens.size() < 2)
                 std::cerr << "cd: missing argument\n";
             else {
-                const std::string &path = tokens[1];
+                std::string &path = tokens[1];
+
+                if (path == "~"){
+                    const char* home = std::getenv("HOME"); 
+
+                    if (home){
+                        path = home;
+                    }
+
+                    else{
+                        std::cerr << "cd: HOME environment variable not set\n";
+                        continue;
+
+                    }
+
+                }
                 if (chdir(path.c_str()) == -1){
                     std::cerr << "cd: " << tokens[1] << ": No such file or directory\n"; //added
                 }
