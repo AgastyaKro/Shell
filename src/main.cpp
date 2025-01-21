@@ -118,25 +118,34 @@ int main() {
 
         // Handle `echo` command
         if (args[0] == std::string("echo")) { // Adjusted to handle string comparison
-            std::string text = input.substr(input.find("echo ") + 5);
+    // Extract the text after the "echo" command
+    std::string text = input.substr(input.find("echo ") + 5);
 
-            if (!text.empty() && text.front() == '\'' && text.back() == '\'') {
-                std::cout << text.substr(1, text.size() - 2) << std::endl;
-            } else if (!text.empty() && text.front() == '\"' && text.back() == '\"') {
-                std::cout << text.substr(1, text.size() - 2) << std::endl;
-            } else {
-                for (size_t i = 1; i < args.size() - 1; i++) {
-                    if (args[i] != nullptr) {
-                        std::cout << args[i] << " ";
-                    }
-                }
-                if (args[args.size() - 2] != nullptr) {
-                    std::cout << args[args.size() - 2];
-                }
-                std::cout << std::endl;
+    // Handle single-quoted text
+    if (!text.empty() && text.front() == '\'' && text.back() == '\'') {
+        std::cout << text.substr(1, text.size() - 2) << std::endl; // Remove quotes
+    }
+    // Handle double-quoted text
+    else if (!text.empty() && text.front() == '\"' && text.back() == '\"') {
+        std::cout << text.substr(1, text.size() - 2) << std::endl; // Remove quotes
+    }
+    // Handle unquoted text
+    else {
+        std::istringstream stream{text};
+        std::string temp;
+        bool first = true;
+        while (stream >> temp) {
+            if (!first) {
+                std::cout << " ";
             }
-            continue;
+            std::cout << temp;
+            first = false;
         }
+        std::cout << std::endl;
+    }
+    continue;
+}
+
 
         // Handle `cat` command
         if (args[0] == std::string("cat")) { // Adjusted to handle string comparison
