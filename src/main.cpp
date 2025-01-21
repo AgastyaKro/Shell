@@ -118,33 +118,40 @@ int main() {
 
         // Handle `echo` command
         if (args[0] == std::string("echo")) { // Adjusted to handle string comparison
-    // Extract the text after the "echo" command
-    std::string text = input.substr(input.find("echo ") + 5);
+    std::string result;
+    bool in_quotes = false;
+    char quote_char = '\0';
 
-    // Handle single-quoted text
-    if (!text.empty() && text.front() == '\'' && text.back() == '\'') {
-        std::cout << text.substr(1, text.size() - 2) << std::endl; // Remove quotes
-    }
-    // Handle double-quoted text
-    else if (!text.empty() && text.front() == '\"' && text.back() == '\"') {
-        std::cout << text.substr(1, text.size() - 2) << std::endl; // Remove quotes
-    }
-    // Handle unquoted text
-    else {
-        std::istringstream stream{text};
-        std::string temp;
-        bool first = true;
-        while (stream >> temp) {
-            if (!first) {
-                std::cout << " ";
+    // Iterate through the input after "echo"
+    for (size_t i = input.find("echo ") + 5; i < input.size(); i++) {
+        char c = input[i];
+
+        // Toggle quote mode on encountering single or double quotes
+        if ((c == '\'' || c == '\"') && (in_quotes == false)) {
+            in_quotes = true;
+            quote_char = c; // Remember the type of quote
+        } else if (c == quote_char && in_quotes) {
+            in_quotes = false; // End of quote
+        } else if (c == ' ' && !in_quotes) {
+            // Handle spaces outside quotes
+            if (!result.empty() && result.back() != ' ') {
+                result += ' ';
             }
-            std::cout << temp;
-            first = false;
+        } else {
+            // Append characters inside or outside quotes
+            result += c;
         }
-        std::cout << std::endl;
     }
+
+    // Remove trailing spaces
+    if (!result.empty() && result.back() == ' ') {
+        result.pop_back();
+    }
+
+    std::cout << result << std::endl;
     continue;
 }
+
 
 
         // Handle `cat` command
