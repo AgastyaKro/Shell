@@ -120,27 +120,29 @@ int main() {
 
         // Handle `echo` command
         if (args[0] == "echo") {
-            if (input[5] == '\'' || input[5] == '\"') { // Handle quoted strings
-                char quote_char = input[5];
-                size_t start = input.find(quote_char) + 1;
-                size_t end = input.rfind(quote_char);
+    if (input[5] == '\'' || input[5] == '\"') { // Handle quoted strings
+        char quote_char = input[5]; // Determine the type of quote
+        size_t start = input.find(quote_char) + 1; // Locate the opening quote
+        size_t end = input.rfind(quote_char); // Locate the closing quote
 
-                if (start != std::string::npos && end != std::string::npos && start < end) {
-                    std::cout << input.substr(start, end - start) << '\n';
-                } else {
-                    std::cerr << "Invalid quoted string\n";
-                }
-            } else { // Handle unquoted arguments
-                for (size_t i = 1; i < args.size(); i++) {
-                    if (args[i] != nullptr) {
-                        std::cout << args[i];
-                        if (i < args.size() - 1) std::cout << " ";
-                    }
-                }
-                std::cout << '\n';
-            }
-            continue;
+        if (start != std::string::npos && end != std::string::npos && start < end) {
+            std::cout << input.substr(start, end - start) << std::endl; // Extract and print content inside quotes
+        } else {
+            std::cerr << "Invalid quoted string" << std::endl; // Handle unmatched quotes
         }
+    } else { // Handle unquoted arguments
+        for (size_t i = 1; i < args.size(); i++) {
+            if (args[i] != nullptr) {
+                std::cout << args[i];
+                if (i < args.size() - 1) std::cout << " ";
+            }
+        }
+        std::cout << std::endl;
+    }
+    continue;
+}
+
+
         if (args[0] == "cat") {
             pid_t pid = fork(); // Create a child process
             if (pid == 0) { // In the child process
