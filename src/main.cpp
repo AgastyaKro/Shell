@@ -174,6 +174,7 @@ int main() {
         // Command not recognized
         std::cout << input << ": command not found" << std::endl;
     }
+    }
 
     return 0;
 }
