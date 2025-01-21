@@ -132,10 +132,11 @@ int main() {
             else {
                 for (size_t i = 1; i < args.size(); i++) {
                     if (args[i] != nullptr && strlen(args[i]) > 0) { // Check for null and empty string
-                        std::cout << args[i] << " " << '\n';
+                        std::cout << args[i] << " ";
                         }
                     }
                 }
+                std::cout << '\n';
             continue;
         }
 
