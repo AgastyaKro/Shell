@@ -119,21 +119,28 @@ int main() {
         }
 
         // Handle `echo` command
-        else if (args[0] == "echo") {
-            if (input[5] == '\'') {
-                std::cout << input.substr(6, input.length() - 7) << std::endl;
-            } else if (input[5] == '\"') {
-                std::cout << input.substr(6, input.length() - 7) << std::endl;
-            } else {
+        if (args[0] == "echo") {
+            if (input[5] == '\'' || input[5] == '\"') { // Handle quoted strings
+                char quote_char = input[5];
+                size_t start = input.find(quote_char) + 1;
+                size_t end = input.rfind(quote_char);
+
+                if (start != std::string::npos && end != std::string::npos && start < end) {
+                    std::cout << input.substr(start, end - start) << '\n';
+                } else {
+                    std::cerr << "Invalid quoted string\n";
+                }
+            } else { // Handle unquoted arguments
                 for (size_t i = 1; i < args.size(); i++) {
-                    if (args[i] != nullptr && strlen(args[i]) > 0) { // Check for non-null and non-empty string
-                        std::cout << args[i] << " ";
+                    if (args[i] != nullptr) {
+                        std::cout << args[i];
+                        if (i < args.size() - 1) std::cout << " ";
                     }
                 }
-                std::cout << std::endl; // Print newline after the loop
+                std::cout << '\n';
             }
+            continue;
         }
-
         if (args[0] == "cat") {
             pid_t pid = fork(); // Create a child process
             if (pid == 0) { // In the child process
