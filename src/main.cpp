@@ -9,8 +9,6 @@
 #include <sys/wait.h>
 #include <cstring>
 
-
-
 std::vector<std::string> split (const std::string &str, char delimeter){
     std::vector<std::string> tokens;
     std::stringstream ss(str);
@@ -119,24 +117,29 @@ int main() {
         }
 
         // Handle `echo` command
-        if (args[0] == "echo") {
-            const int ECHO_LEN = 5;
-            std::string text = input.substr(ECHO_LEN);
-            if (text.front() == '\'' && text.back() == '\''){
-                std::cout << text.substr(1,text.size() - 2) << std::endl;
+        if (args[0] == std::string("echo")) { // Adjusted to handle string comparison
+            std::string text = input.substr(input.find("echo ") + 5);
+
+            if (!text.empty() && text.front() == '\'' && text.back() == '\'') {
+                std::cout << text.substr(1, text.size() - 2) << std::endl;
+            } else if (!text.empty() && text.front() == '\"' && text.back() == '\"') {
+                std::cout << text.substr(1, text.size() - 2) << std::endl;
             } else {
-                std::istringstream stream {text};
-                std::string temp {};
-                int i {0};
-                while(stream >> temp){
-                std::cout << (i++ ? " " : "") << temp;
+                for (size_t i = 1; i < args.size() - 1; i++) {
+                    if (args[i] != nullptr) {
+                        std::cout << args[i] << " ";
+                    }
+                }
+                if (args[args.size() - 2] != nullptr) {
+                    std::cout << args[args.size() - 2];
                 }
                 std::cout << std::endl;
-                // std::cout << text << std::endl;
             }
+            continue;
+        }
 
-
-        if (args[0] == "cat") {
+        // Handle `cat` command
+        if (args[0] == std::string("cat")) { // Adjusted to handle string comparison
             pid_t pid = fork(); // Create a child process
             if (pid == 0) { // In the child process
                 execvp(args[0], const_cast<char *const *>(args.data())); // Execute 'cat'
@@ -151,8 +154,7 @@ int main() {
             continue;
         }
 
-
-        // Handle external commands and creates child processes w/out termenating the parent proccess
+        // Handle external commands and creates child processes w/out terminating the parent process
         std::string full_path = search_path(command); 
         if (!full_path.empty()) { 
             pid_t pid = fork(); // Creates a new child process
@@ -173,7 +175,6 @@ int main() {
 
         // Command not recognized
         std::cout << input << ": command not found" << std::endl;
-    }
     }
 
     return 0;
