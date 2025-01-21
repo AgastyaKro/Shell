@@ -155,40 +155,10 @@ int main() {
 
 
         // Handle `cat` command
-        if (args[0] == std::string("cat")) { // Handle 'cat' command
-    // Remove quotes from arguments
-    std::vector<std::string> clean_args;
-    clean_args.push_back(args[0]); // Add "cat"
-
-    for (size_t i = 1; args[i] != nullptr; i++) {
-        std::string arg(args[i]);
-        if (!arg.empty() && (arg.front() == '\'' || arg.front() == '\"') && (arg.back() == '\'' || arg.back() == '\"')) {
-            clean_args.push_back(arg.substr(1, arg.size() - 2)); // Remove quotes
-        } else {
-            clean_args.push_back(arg);
-        }
+        if(args[0]=="cat"){
+      // string ans;
+      system(input.c_str());
     }
-
-    // Convert clean_args to const char* array for execvp
-    std::vector<const char*> exec_args;
-    for (const auto& arg : clean_args) {
-        exec_args.push_back(arg.c_str());
-    }
-    exec_args.push_back(nullptr); // Null-terminate
-
-    pid_t pid = fork(); // Create a child process
-    if (pid == 0) { // In the child process
-        execvp(exec_args[0], const_cast<char *const *>(exec_args.data())); // Execute 'cat'
-        perror("execvp"); // Print error if execvp fails
-        exit(1); // Exit the child process with an error code
-    } else if (pid > 0) { // In the parent process
-        int status;
-        waitpid(pid, &status, 0); // Wait for the child process to finish
-    } else {
-        perror("fork"); // Handle fork failure
-    }
-    continue;
-}
 
 
         // Handle external commands and creates child processes w/out terminating the parent process
