@@ -9,21 +9,17 @@
 #include <sys/wait.h>
 #include <cstring>
 
-// ------------------------------------------------------------------------
-// Minimal new function for parsing input while respecting single quotes.
-// ------------------------------------------------------------------------
-std::vector<std::string> parse_input_single_quotes(const std::string &input) //added
-{
+// New parser for single quotes
+std::vector<std::string> parse_input_single_quotes(const std::string &input) {
     std::vector<std::string> tokens;
-    bool in_single_quotes = false; //added
-    std::string current_token; //added
+    bool in_single_quotes = false;
+    std::string current_token;
 
-    for (size_t i = 0; i < input.size(); i++) { //added
-        char c = input[i]; //added
-
+    for (size_t i = 0; i < input.size(); i++) {
+        char c = input[i];
         if (c == '\'') {
             // Toggle single-quote mode
-            in_single_quotes = !in_single_quotes; //added
+            in_single_quotes = !in_single_quotes;
         }
         else if (!in_single_quotes && std::isspace(static_cast<unsigned char>(c))) {
             // Outside quotes, whitespace ends the current token
@@ -33,12 +29,12 @@ std::vector<std::string> parse_input_single_quotes(const std::string &input) //a
             }
         }
         else {
-            // Normal character, or space inside single quotes
+            // Normal character, or space inside quotes
             current_token.push_back(c);
         }
     }
 
-    // If there's a leftover token, push it
+    // Last token
     if (!current_token.empty()) {
         tokens.push_back(current_token);
     }
@@ -76,150 +72,130 @@ std::string search_path(const std::string &command){
 }
 
 int main() {
-    // Flush after every std::cout / std::cerr
+    // Flush on every output
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
 
     // Define a set of shell builtin commands
-    std::unordered_set<std::string> builtins = {"echo", "exit", "type", "pwd", "cd", "cat"};
+    // Removed "cat" from this set so that "type cat" works as the test expects
+    std::unordered_set<std::string> builtins = {
+        "echo", "exit", "type", "pwd", "cd" 
+        // "cat" //removed
+    };
 
     while (true) {
         std::cout << "$ ";
 
         std::string input;
         std::getline(std::cin, input);
-
-        if (input == "exit 0") {
-            return 0; // Exits the program
+        if (!std::cin.good()) {
+            // End if no more input
+            return 0;
         }
 
-        // --------------------------------------------------------------------
-        // Use our new parse_input_single_quotes() function instead of naive split
-        // --------------------------------------------------------------------
-        std::vector<std::string> tokens = parse_input_single_quotes(input); //added
+        if (input == "exit 0") {
+            return 0;
+        }
 
-        if (tokens.empty()) continue;
+        // Use new parser
+        std::vector<std::string> tokens = parse_input_single_quotes(input);
+        if (tokens.empty()) {
+            continue;
+        }
 
         std::string command = tokens[0];
-        std::vector<const char *> args;
-        for (const auto &token : tokens){
-            args.push_back(token.c_str());
+
+        std::vector<const char*> args;
+        for (auto &t : tokens) {
+            args.push_back(t.c_str());
         }
         args.push_back(nullptr);
 
         // Builtin: pwd
-        if (command == "pwd"){
+        if (command == "pwd") {
             std::string cwd = std::filesystem::current_path();
             std::cout << cwd << "\n";
             continue;
         }
 
         // Builtin: cd
-        if (command == "cd"){
-            if (tokens.size() < 2)
+        if (command == "cd") {
+            if (tokens.size() < 2) {
                 std::cerr << "cd: missing argument\n";
-            else {
+            } else {
                 std::string &path = tokens[1];
-
-                if (path == "~"){
-                    const char* home = std::getenv("HOME"); 
-                    if (home){
+                if (path == "~") {
+                    const char* home = std::getenv("HOME");
+                    if (home) {
                         path = home;
-                    }
-                    else{
+                    } else {
                         std::cerr << "cd: HOME environment variable not set\n";
                         continue;
                     }
                 }
-                if (chdir(path.c_str()) == -1){
-                    std::cerr << "cd: " << tokens[1] << ": No such file or directory\n"; //added
+                if (chdir(path.c_str()) == -1) {
+                    std::cerr << "cd: " << tokens[1] << ": No such file or directory\n";
                 }
             }
             continue;
         }
 
         // Builtin: type
-        if (input.substr(0, 4) == "type" && input.size() > 5) {
-            std::string command = input.substr(5);
-            if (builtins.count(command)) {
-                std::cout << command << " is a shell builtin" << std::endl;
+        if (input.rfind("type", 0) == 0 && input.size() > 5) {
+            // e.g. "type cat", "type ls"
+            std::string c = input.substr(5);
+            if (builtins.count(c)) {
+                std::cout << c << " is a shell builtin" << std::endl;
             } else {
-                std::string path = search_path(command);
-                if (!path.empty()) {
-                    std::cout << command << " is " << path << std::endl;
+                std::string p = search_path(c);
+                if (!p.empty()) {
+                    std::cout << c << " is " << p << std::endl;
                 } else {
-                    std::cout << command << ": not found" << std::endl;
+                    std::cout << c << ": not found" << std::endl;
                 }
             }
             continue;
         }
 
-        // --------------------------------------------------------------------
-        // Simpler echo: we don't parse quotes here anymore. We rely on
-        // parse_input_single_quotes() to have handled them.
-        // --------------------------------------------------------------------
-        if (args[0] == std::string("echo")) {
-            //added (simpler echo)
+        // Builtin: echo
+        if (command == "echo") {
+            // Just print tokens after echo, separated by spaces
             for (size_t i = 1; i < tokens.size(); i++) {
                 std::cout << tokens[i];
-                if (i + 1 < tokens.size()) std::cout << " ";
+                if (i + 1 < tokens.size()) {
+                    std::cout << " ";
+                }
             }
-            std::cout << std::endl;
+            std::cout << "\n";
             continue;
         }
 
-        /* -------------------------
-        //removed old echo logic that re-parsed the quotes:
-        // if (args[0] == std::string("echo")) { 
-        //     std::string result; 
-        //     bool in_quotes = false;
-        //     ...
-        //     std::cout << result << std::endl;
-        //     continue;
-        // }
-        --------------------------*/
-
-        // --------------------------------------------------------------------
-        // Builtin: cat
-        // Replace system() with fork+exec so single-quoted filenames work
-        // --------------------------------------------------------------------
-        if(args[0] == std::string("cat")) {
-            //removed system(input.c_str()); //removed
-            //added new fork+exec approach:
-            pid_t pid = fork(); //added
-            if (pid == 0) { //child //added
-                execvp("cat", const_cast<char* const*>(args.data())); //added
-                perror("execvp"); //added
-                exit(1); //added
-            } else if (pid > 0) { //parent //added
-                int status; //added
-                waitpid(pid, &status, 0); //added
-            } else { //added
-                perror("fork"); //added
-            }
-            continue;
+        // Removed cat from builtins, so remove the custom cat block:
+        /*
+        if (args[0] == std::string("cat")) {
+            //removed because we want 'cat' recognized as external
+            system(input.c_str());
+            ...
         }
+        */
 
-        // Handle external commands
-        std::string full_path = search_path(command); 
-        if (!full_path.empty()) { 
+        // If not a builtin, search PATH and run external command
+        std::string full_path = search_path(command);
+        if (!full_path.empty()) {
             pid_t pid = fork();
-            if (pid == 0) { // child
-                execvp(full_path.c_str(), const_cast<char *const *>(args.data()));
+            if (pid == 0) {
+                execvp(full_path.c_str(), const_cast<char* const*>(args.data()));
                 perror("execvp");
-                exit(1); 
-            } else if (pid > 0) { // parent
-                int status; 
+                exit(1);
+            } else if (pid > 0) {
+                int status;
                 waitpid(pid, &status, 0);
-            } else { 
+            } else {
                 perror("fork");
-            } 
-            continue; 
-        } 
-
-        // Command not recognized
-        std::cout << input << ": command not found" << std::endl;
+            }
+        } else {
+            std::cout << input << ": command not found" << std::endl;
+        }
     }
-
     return 0;
 }
