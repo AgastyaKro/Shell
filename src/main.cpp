@@ -8,6 +8,7 @@
 #include <unistd.h> 
 #include <sys/wait.h>
 
+
 std::vector<std::string> split (const std::string &str, char delimeter){
     std::vector<std::string> tokens;
     std::stringstream ss(str);
@@ -43,7 +44,7 @@ int main() {
     std::cerr << std::unitbuf;
 
     // Define a set of shell builtin commands
-    std::unordered_set<std::string> builtins = {"echo", "exit", "type", "pwd", "cd"};
+    std::unordered_set<std::string> builtins = {"echo", "exit", "type", "pwd", "cd", "cat"};
 
     while (true) {
         std::cout << "$ ";
@@ -116,10 +117,41 @@ int main() {
         }
 
         // Handle `echo` command
-        if (input.substr(0, 4) == "echo" && input.size() > 5) {
-            std::cout << input.substr(5) << std::endl;
+        if (input.substr(0, 4) == "echo") {
+            
+            if(input[5]=='\''){
+                std::cout<<input.substr(6,input.length()-7)<<'\n';
+            }
+
+            else if(input[5]=='\"'){
+                std::cout<<input.substr(6,input.length()-7)<<'\n';
+            }
+
+            else {
+                for (size_t i = 1; i < args.size(); i++) {
+                    if (args[i] != nullptr && strlen(args[i]) > 0) { // Check for null and empty string
+                        std::cout << args[i] << " " << '\n';
+                        }
+                    }
+                }
             continue;
         }
+
+        if (args[0] == "cat") {
+            pid_t pid = fork(); // Create a child process
+            if (pid == 0) { // In the child process
+                execvp(args[0], const_cast<char *const *>(args.data())); // Execute 'cat'
+                perror("execvp"); // Print error if execvp fails
+                exit(1); // Exit the child process with an error code
+            } else if (pid > 0) { // In the parent process
+                int status;
+                waitpid(pid, &status, 0); // Wait for the child process to finish
+            } else {
+                perror("fork"); // Handle fork failure
+            }
+            continue;
+        }
+
 
         // Handle external commands and creates child processes w/out termenating the parent proccess
         std::string full_path = search_path(command); 
