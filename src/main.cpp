@@ -119,25 +119,19 @@ int main() {
         }
 
         // Handle `echo` command
-        if (input.substr(0, 4) == "echo") {
-            
-            if(input[5]=='\''){
-                std::cout<<input.substr(6,input.length()-7)<<'\n';
-            }
-
-            else if(input[5]=='\"'){
-                std::cout<<input.substr(6,input.length()-7)<<'\n';
-            }
-
-            else {
+        else if (args[0] == "echo") {
+            if (input[5] == '\'') {
+                std::cout << input.substr(6, input.length() - 7) << std::endl;
+            } else if (input[5] == '\"') {
+                std::cout << input.substr(6, input.length() - 7) << std::endl;
+            } else {
                 for (size_t i = 1; i < args.size(); i++) {
-                    if (args[i] != nullptr && strlen(args[i]) > 0) { // Check for null and empty string
+                    if (args[i] != nullptr && strlen(args[i]) > 0) { // Check for non-null and non-empty string
                         std::cout << args[i] << " ";
-                        }
                     }
                 }
-                std::cout << '\n';
-            continue;
+                std::cout << std::endl; // Print newline after the loop
+            }
         }
 
         if (args[0] == "cat") {
