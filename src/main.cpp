@@ -7,6 +7,8 @@
 #include <filesystem> 
 #include <unistd.h> 
 #include <sys/wait.h>
+#include <cstring>
+
 
 
 std::vector<std::string> split (const std::string &str, char delimeter){
