@@ -12,16 +12,16 @@
 // New parser for single quotes
 std::vector<std::string> parse_input_single_quotes(const std::string &input) {
     std::vector<std::string> tokens;
-    bool in_single_quotes = false;
+    bool quotes = false;
     std::string current_token;
 
     for (size_t i = 0; i < input.size(); i++) {
         char c = input[i];
-        if (c == '\'') {
+        if (c == '\'' || c == '\"') {
             // Toggle single-quote mode
-            in_single_quotes = !in_single_quotes;
+            quotes = !quotes;
         }
-        else if (!in_single_quotes && std::isspace(static_cast<unsigned char>(c))) {
+        else if (!quotes && std::isspace(static_cast<unsigned char>(c))) {
             // Outside quotes, whitespace ends the current token
             if (!current_token.empty()) {
                 tokens.push_back(current_token);
