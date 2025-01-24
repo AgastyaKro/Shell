@@ -9,26 +9,26 @@
 #include <sys/wait.h>
 #include <cstring>
 
-// New parser for single quotes
-std::vector<std::string> parse_input_single_quotes(const std::string &input) {
+// New parser for single quotes and double quotes
+std::vector<std::string> parse_input_quotes(const std::string &input) {
     std::vector<std::string> tokens;
-    bool quotes = false;
+    bool in_quotes = false;
+    char quote_char = '\0'; // Track the type of quote (' or ") // ADDED
     std::string current_token;
 
     for (size_t i = 0; i < input.size(); i++) {
         char c = input[i];
-        if (c == '\'' || c == '\"') {
-            // Toggle single-quote mode
-            quotes = !quotes;
-        }
-        else if (!quotes && std::isspace(static_cast<unsigned char>(c))) {
+        if ((c == '\'' || c == '\"') && (!in_quotes || c == quote_char)) {
+            // Toggle quote mode when encountering a matching quote
+            in_quotes = !in_quotes; // ADDED
+            quote_char = in_quotes ? c : '\0'; // Set or clear the quote type // ADDED
+        } else if (!in_quotes && std::isspace(static_cast<unsigned char>(c))) {
             // Outside quotes, whitespace ends the current token
             if (!current_token.empty()) {
                 tokens.push_back(current_token);
                 current_token.clear();
             }
-        }
-        else {
+        } else {
             // Normal character, or space inside quotes
             current_token.push_back(c);
         }
@@ -41,6 +41,7 @@ std::vector<std::string> parse_input_single_quotes(const std::string &input) {
 
     return tokens;
 }
+
 
 std::vector<std::string> split(const std::string &str, char delimeter){
     std::vector<std::string> tokens;
@@ -98,7 +99,7 @@ int main() {
         }
 
         // Use new parser
-        std::vector<std::string> tokens = parse_input_single_quotes(input);
+        std::vector<std::string> tokens = parse_input_quotes(input);
         if (tokens.empty()) {
             continue;
         }
