@@ -15,14 +15,27 @@ std::vector<std::string> parse_input_quotes(const std::string &input) {
     bool in_quotes = false;
     char quote_char = '\0'; // Track the type of quote (' or ") // ADDED
     std::string current_token;
+    bool escape = false;
 
     for (size_t i = 0; i < input.size(); i++) {
         char c = input[i];
-        if ((c == '\'' || c == '\"') && (!in_quotes || c == quote_char)) {
+
+        if (escape){
+            current_token.push_back(c);
+            escape = false;
+        }
+
+        else if (c == '\\') {
+            // Start escape sequence
+            escape = true;
+        } 
+
+        else if ((c == '\'' || c == '\"') && (!in_quotes || c == quote_char)) {
             // Toggle quote mode when encountering a matching quote
-            in_quotes = !in_quotes; // ADDED
-            quote_char = in_quotes ? c : '\0'; // Set or clear the quote type // ADDED
-        } else if (!in_quotes && std::isspace(static_cast<unsigned char>(c))) {
+            in_quotes = !in_quotes;
+            quote_char = in_quotes ? c : '\0'; // Set or clear the quote type
+        } 
+        else if (!in_quotes && std::isspace(static_cast<unsigned char>(c))) {
             // Outside quotes, whitespace ends the current token
             if (!current_token.empty()) {
                 tokens.push_back(current_token);
