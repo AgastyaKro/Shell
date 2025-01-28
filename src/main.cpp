@@ -13,29 +13,31 @@
 std::vector<std::string> parse_input_quotes(const std::string &input) {
     std::vector<std::string> tokens;
     bool in_quotes = false;
-    char quote_char = '\0'; // Track the type of quote (' or ") // ADDED
+    char quote_char = '\0'; // Tracks the type of quote (' or ")
     std::string current_token;
-    bool escape = false;
+    bool escape = false; // Tracks if the current character is escaped
 
     for (size_t i = 0; i < input.size(); i++) {
         char c = input[i];
 
-        if (escape){
-            current_token.push_back(c);
+        if (escape) {
+            // If escape mode is active, add the literal character
+            if (c == 'n') {
+                current_token.push_back('\n'); // Handle newline escape
+            } else if (c == 't') {
+                current_token.push_back('\t'); // Handle tab escape
+            } else {
+                current_token.push_back(c); // Other escaped characters
+            }
             escape = false;
-        }
-
-        else if (c == '\\') {
+        } else if (c == '\\') {
             // Start escape sequence
             escape = true;
-        } 
-
-        else if ((c == '\'' || c == '\"') && (!in_quotes || c == quote_char)) {
-            // Toggle quote mode when encountering a matching quote
+        } else if ((c == '\'' || c == '\"') && (!in_quotes || c == quote_char)) {
+            // Toggle quote mode
             in_quotes = !in_quotes;
-            quote_char = in_quotes ? c : '\0'; // Set or clear the quote type
-        } 
-        else if (!in_quotes && std::isspace(static_cast<unsigned char>(c))) {
+            quote_char = in_quotes ? c : '\0';
+        } else if (!in_quotes && std::isspace(static_cast<unsigned char>(c))) {
             // Outside quotes, whitespace ends the current token
             if (!current_token.empty()) {
                 tokens.push_back(current_token);
@@ -47,13 +49,14 @@ std::vector<std::string> parse_input_quotes(const std::string &input) {
         }
     }
 
-    // Last token
+    // Add the last token if any
     if (!current_token.empty()) {
         tokens.push_back(current_token);
     }
 
     return tokens;
 }
+
 
 
 std::vector<std::string> split(const std::string &str, char delimeter){
