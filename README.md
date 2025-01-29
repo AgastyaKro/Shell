@@ -1,5 +1,3 @@
-Here’s an updated `README.md` for your project without mentioning Codecrafters:
-
 ---
 
 # Shell Implementation
